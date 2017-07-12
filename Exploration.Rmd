@@ -1,0 +1,117 @@
+---
+title: "Instacart"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(plyr)
+library(ggplot2)
+
+#set directory
+setwd("~/Dropbox/Data Science/Instacart")
+
+
+files <- c("aisles","departments","order_products__prior","order_products__train","orders","products")
+
+for (i in 1:length(files)){
+  assign(files[i], read.csv(paste(files[i],".csv",sep = "")))
+  
+}
+
+```
+
+
+#Joining the tables
+
+```{r, echo=FALSE}
+order_join <- products %>% merge(., aisles, by = "aisle_id", all.x = TRUE) %>%
+  merge(., departments, by="department_id", all.x= TRUE) %>%
+  merge(order_products__train, ., by = "product_id",all.x = TRUE) %>%
+  merge(., orders, by = "order_id", all.x = TRUE)
+
+
+#order_join2 <- products %>% merge(., aisles, by = "aisle_id", all.x = TRUE) %>%
+#  merge(., departments, by="department_id", all.x= TRUE) %>%
+#  merge(order_products__prior, ., by = "product_id",all.x = TRUE) %>%
+#  merge(., orders, by = "order_id", all.x = TRUE)
+
+orders_train <- order_join[which(order_join$eval_set == "train"),]
+
+clean <- c("department_id","aisle_id","eval_set")
+orders_train <- orders_train[,!names(orders_train) %in% clean]
+
+```
+
+
+
+```{r, echo=FALSE}
+reorder_department <- ddply(orders_train, 
+                         "department",summarise, 
+                         total_trans = length(order_id),
+                         perc_reorder = length(which(reordered==1))/length(order_id))
+
+plot_reorder_dep <- ggplot(reorder_department, aes(x = total_trans, y = perc_reorder,label = department)) + 
+  geom_text();plot_reorder_dep
+
+```
+
+```{r, echo = FALSE}
+orders_train %>% 
+  ddply(., c("product_id","order_hour_of_day"),summarize, N= length(unique(order_id))) %>%
+  ggplot(., aes(x = order_hour_of_day, y = N,group = product_id, color = product_id)) + 
+  geom_line()
+
+```
+
+
+```{r, echo = FALSE}
+orders_train %>% 
+  ddply(., c("product_id","order_dow"),summarize, N= length(unique(order_id))) %>%
+  ggplot(., aes(x = order_dow, y = N,group = product_id, color = product_id)) + 
+  geom_line()
+
+```
+
+
+```{r, echo = FALSE}
+orders_train %>%
+  ddply(., c("product_id","order_dow","order_hour_of_day"),summarize,
+                       N = length(unique(order_id))) %>%
+  ggplot(., aes(x = product_id, y = N)) + 
+  geom_point(aes(color = order_hour_of_day))
+
+```
+
+#Percentage of Users that reorder products
+```{r, echo = FALSE}
+
+orders_train %>%
+  ddply(., "user_id" ,summarize, 
+                      perc_reorder = length(which(reordered == 1))/length(order_id)) -> a
+
+
+cuts <- cut(a$perc_reorder, seq(0,1,0.1),include.lowest = TRUE)
+  
+cuts <-as.data.frame(cuts)
+cuts <- ddply(cuts, "cuts",summarize, n = length(cuts))
+
+ggplot(cuts, aes(x =cuts , y = n)) + geom_bar(stat = "identity")
+
+
+
+```
+
+#Days since prior order
+```{r, echo=False}
+
+orders_train$days_since_prior_order <- as.factor(orders_train$days_since_prior_order)
+
+orders_train %>%
+  ddply(., "days_since_prior_order", summarize, N= length(user_id)) %>%
+  ggplot(., aes(x = days_since_prior_order, y = N)) + geom_bar(stat = "identity", fill = "red")
+
+
+```
+
+
