@@ -44,15 +44,13 @@ orders_train <- orders_train[,!names(orders_train) %in% clean]
 ```
 
 
-
+#Reordered products versus product type 
 ```{r, echo=FALSE}
-reorder_department <- ddply(orders_train, 
-                         "department",summarise, 
-                         total_trans = length(order_id),
-                         perc_reorder = length(which(reordered==1))/length(order_id))
-
-plot_reorder_dep <- ggplot(reorder_department, aes(x = total_trans, y = perc_reorder,label = department)) + 
-  geom_text();plot_reorder_dep
+orders_train %>%
+  ddply(., "department",summarise,total_trans=length(order_id),
+        perc_reorder=length(which(reordered==1))/length(order_id)) %>% 
+  ggplot(., aes(x = total_trans, y = perc_reorder,label = department)) + 
+  geom_text()
 
 ```
 
@@ -105,11 +103,10 @@ ggplot(cuts, aes(x =cuts , y = n)) + geom_bar(stat = "identity")
 #Days since prior order
 ```{r, echo=False}
 
-orders_train$days_since_prior_order <- as.factor(orders_train$days_since_prior_order)
-
 orders_train %>%
-  ddply(., "days_since_prior_order", summarize, N= length(user_id)) %>%
-  ggplot(., aes(x = days_since_prior_order, y = N)) + geom_bar(stat = "identity", fill = "red")
+  mutate(days_since = as.factor(days_since_prior_order)) %>%
+  ddply(., "days_since", summarize, N= length(user_id)) %>%
+  ggplot(., aes(x = days_since, y = N)) + geom_bar(stat = "identity", fill = "red")
 
 
 ```
