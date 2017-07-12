@@ -105,10 +105,8 @@ ggplot(cuts, aes(x =cuts , y = n)) + geom_bar(stat = "identity")
 
 orders_train %>%
   mutate(days_since = as.factor(days_since_prior_order)) %>%
-  ddply(., "days_since", summarize, N= length(user_id))
-
-
-#  ggplot(., aes(x = days_since, y = N)) + geom_bar(stat = "identity", fill = "red")
+  ddply(., "days_since", summarize, N= length(user_id))%>%
+  ggplot(., aes(x = days_since, y = N)) + geom_bar(stat = "identity", fill = "red")
 
 
 ```
