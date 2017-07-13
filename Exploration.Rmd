@@ -81,34 +81,24 @@ orders_train %>%
 
 ```
 
-#Percentage of Users that reorder products
+#Percentage of Users that reorder products and days since last order
 ```{r, echo = FALSE}
 
 orders_train %>%
   ddply(., "user_id" ,summarize, 
                       perc_reorder = length(which(reordered == 1))/length(order_id)) -> a
 
-
 cuts <- cut(a$perc_reorder, seq(0,1,0.1),include.lowest = TRUE)
-  
 cuts <-as.data.frame(cuts)
 cuts <- ddply(cuts, "cuts",summarize, n = length(cuts))
 
-ggplot(cuts, aes(x =cuts , y = n)) + geom_bar(stat = "identity")
-
-
-
-```
-
-#Days since prior order
-```{r, echo=False}
+ggplot(cuts, aes(x =cuts , y = n)) + geom_bar(stat = "identity") + 
+  labs(x = "% Reorders", y = "Number of Users")
 
 orders_train %>%
   mutate(days_since = as.factor(days_since_prior_order)) %>%
   ddply(., "days_since", summarize, N= length(user_id)) %>%
   ggplot(., aes(x = days_since, y = N)) + geom_bar(stat = "identity", fill = "red")
 
-
 ```
-
 
