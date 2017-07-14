@@ -7,6 +7,9 @@ output: html_document
 library(dplyr)
 library(plyr)
 library(ggplot2)
+library(tidyr)
+library(arules)
+library(arulesViz)
 
 #set directory
 setwd("~/Dropbox/Data Science/Instacart")
@@ -100,5 +103,40 @@ orders_train %>%
   ddply(., "days_since", summarize, N= length(user_id))%>%
   ggplot(., aes(x = days_since, y = N)) + geom_bar(stat = "identity", fill = "red")
 
+```
+
+#Association Rules Viz on Order Data
+
+```{r, echo=FALSE}
+#######Association Rules###############
+
+#first five products in cart
+cart_products <- function(n,data){
+  number <- seq(1,n,1)
+  ordered_firstn <- data[data$add_to_cart_order %in% number,]
+  sort_data <- ordered_firstn[order(ordered_firstn$order_id,ordered_firstn$add_to_cart_order),]
+  return(sort_data)
+}
+
+
+#aggregate data for each user
+
+text2vec <- function(n, data, by, with){
+  text_data <- cart_products(5,data)
+  text_data$product_name <- gsub(",","",text_data$product_name)
+  product_user <- aggregate(as.formula(paste(with,by, sep = " ~ ")), data = text_data, paste, collapse = ",")
+  text <- as.character(product_user$product_name)
+  text <- strsplit(text, ",")
+  maxLen <- max(sapply(text, length))
+  text <- t(sapply(text, function(x) c(x, rep(NA, maxLen - length(x)))))
+  text <- as.data.frame(text)
+  return(text)
+}
+
+text = text2vec(5, orders_train, by = "user_id", with = "product_name")
+rules <- apriori(text, parameter = list(minlen = 2,  conf = 0.7, supp= 0.00003, maxtime = 100000000))
+rules.sorted <- sort(rules, by="lift")
+plot(rules.sorted, method="graph", control=list(type="items"))
+plot(rules.sorted)
 ```
 
