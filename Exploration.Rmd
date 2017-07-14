@@ -26,7 +26,6 @@ for (i in 1:length(files)){
 
 
 #Joining the tables
-
 ```{r, echo=FALSE}
 order_join <- products %>% merge(., aisles, by = "aisle_id", all.x = TRUE) %>%
   merge(., departments, by="department_id", all.x= TRUE) %>%
@@ -123,9 +122,9 @@ cart_products <- function(n,data){
 
 text2vec <- function(n, data, by, with){
   text_data <- cart_products(5,data)
-  text_data$product_name <- gsub(",","",text_data$product_name)
+  text_data$product_name <- gsub(",","",text_data[,with])
   product_user <- aggregate(as.formula(paste(with,by, sep = " ~ ")), data = text_data, paste, collapse = ",")
-  text <- as.character(product_user$product_name)
+  text <- as.character(product_user[,with])
   text <- strsplit(text, ",")
   maxLen <- max(sapply(text, length))
   text <- t(sapply(text, function(x) c(x, rep(NA, maxLen - length(x)))))
