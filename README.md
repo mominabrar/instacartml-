@@ -20,6 +20,6 @@ Workflow:
   * Commit the changes to Github: git commit -m '[Name of the changes]'
   * Switch to the branch: git checkout [name of branch]
   * Merge with the master file: git merge master
-  * Push the changes: git --set-upstream origin [name of branch]
+  * Push the changes: git push origin [name of branch]
 3. View the branch on Github.com
 4. Pull and Merge the changes
