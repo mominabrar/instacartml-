@@ -121,7 +121,7 @@ cart_products <- function(n,data){
 #aggregate data for each user
 
 text2vec <- function(n, data, by, with){
-  text_data <- cart_products(5,data)
+  text_data <- cart_products(n,data)
   text_data$product_name <- gsub(",","",text_data[,with])
   product_user <- aggregate(as.formula(paste(with,by, sep = " ~ ")), data = text_data, paste, collapse = ",")
   text <- as.character(product_user[,with])
@@ -132,10 +132,9 @@ text2vec <- function(n, data, by, with){
   return(text)
 }
 
-text = text2vec(5, orders_train, by = "user_id", with = "product_name")
+text = text2vec(84, orders_train, by = "order_id", with = "product_name")
 rules <- apriori(text, parameter = list(minlen = 2,  conf = 0.7, supp= 0.00003, maxtime = 100000000))
 rules.sorted <- sort(rules, by="lift")
-plot(rules.sorted, method="graph", control=list(type="items"))
-plot(rules.sorted)
+inspectDT(rules.sorted)
 ```
 
