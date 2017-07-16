@@ -4,47 +4,10 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-library(dplyr)
-library(plyr)
-library(ggplot2)
-library(tidyr)
-library(arules)
-library(arulesViz)
 
-#set directory
-setwd("~/Dropbox/Data Science/Instacart")
-
-
-files <- c("aisles","departments","order_products__prior","order_products__train","orders","products")
-
-for (i in 1:length(files)){
-  assign(files[i], read.csv(paste(files[i],".csv",sep = "")))
-  
-}
+source("dir.R")
 
 ```
-
-
-#Joining the tables
-```{r, echo=FALSE}
-order_join <- products %>% merge(., aisles, by = "aisle_id", all.x = TRUE) %>%
-  merge(., departments, by="department_id", all.x= TRUE) %>%
-  merge(order_products__train, ., by = "product_id",all.x = TRUE) %>%
-  merge(., orders, by = "order_id", all.x = TRUE)
-
-
-#order_join2 <- products %>% merge(., aisles, by = "aisle_id", all.x = TRUE) %>%
-#  merge(., departments, by="department_id", all.x= TRUE) %>%
-#  merge(order_products__prior, ., by = "product_id",all.x = TRUE) %>%
-#  merge(., orders, by = "order_id", all.x = TRUE)
-
-orders_train <- order_join[which(order_join$eval_set == "train"),]
-
-clean <- c("department_id","aisle_id","eval_set")
-orders_train <- orders_train[,!names(orders_train) %in% clean]
-
-```
-
 
 #Reordered products versus product type 
 ```{r, echo=FALSE}
